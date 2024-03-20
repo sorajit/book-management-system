@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://www.w3schools.com/html/styles.css" />
+    <!-- library from datatables.net to create clickable table -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css"
+    />
+    <script defer src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script
+      defer
+      src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"
+    ></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <input type="button" value="add" onclick="addSection();" />
+    <input type="button" value="view" onclick="sectionManage('view');" />
+    <h3 id="headSection">View Section</h3>
+    <div class="container" name="section" id="input" style="display: none">
+      <!-- title: "New Book", author: "New Author", year: 2023, price: 700 -->
+      <label for="title">Title :</label>
+      <input type="text" name="title" id="title" /><br /><br />
+      <label for="author">Author :</label>
+      <input type="text" name="author" id="author" /><br /><br />
+      <label for="year">Year :</label>
+      <input
+        type="number"
+        name="year"
+        id="year"
+        min="1800"
+        max="2024"
+      /><br /><br />
+      <label for="price">Price :</label>
+      <input type="number" name="price" id="price" /><br /><br />
+      <input
+        type="button"
+        id="submit"
+        class="w3-button w3-blue"
+        value="submit"
+        onclick="addSubmitBtn();"
+      />
+    </div>
+    <div class="container" name="section" id="view">
+      <div class="container" id="TBcontainer"></div>
+    </div>
+
+    <script>
+      let books = [
+        { title: "Book1", author: "Author1", year: 2021, price: 500 },
+        { title: "Book2", author: "Author2", year: 2022, price: 600 },
+      ];
+
+      // ----------------function section----------------------
+      var headText = document.getElementById("headSection");
+      var titleField = document.getElementById("title");
+      var authorField = document.getElementById("author");
+      var yearField = document.getElementById("year");
+      var priceField = document.getElementById("price");
+      var submitBtn = document.getElementById("submit");
+
+      function sectionManage(sectionId) {
+        let sectionPage = document.getElementsByName("section");
+        sectionPage.forEach((e) => {
+          if (e.id === sectionId) {
+            e.style.display = "inline";
+          } else {
+            e.style.display = "none";
+          }
+        });
+        if (sectionId == "view") {
+          viewSection();
+          headText.innerHTML = "View Section";
+        } else {
+          headText.innerHTML = "Input Section";
+        }
+      }
+      function addSection() {
+        sectionManage("input");
+        titleField.value = "";
+        authorField.value = "";
+        yearField.value = "";
+        priceField.value = "";
+        submitBtn.setAttribute("onclick", "addSubmitBtn()");
+      }
+      function addSubmitBtn() {
+        var newBook = {
+          title: titleField.value,
+          author: authorField.value,
+          year: yearField.value,
+          price: priceField.value,
+        };
+        if (checkSubmitValue(newBook)) {
+          if(checkUnique(newBook, books)){
+            books.push(newBook);
+            sectionManage("view");
+          }
+        }
+      }
+      function viewSection() {
+        cleanTableContainer();
+        let container = document.getElementById("TBcontainer");
+        // Create the table element
+        let table = document.createElement("table");
+        table.setAttribute("id", "tableProperties");
+        table.setAttribute("class", "table table-striped table-bordered");
+        table.setAttribute("style", "width:100%");
+        if (books.length === 0) {
+          alert("not have book to show");
+          return;
+        }
+        let cols = Object.keys(books[0]);
+        cols.push("edit"); //เพิ่มปุ่นแก้ไข
+        cols.push("delect"); // เพิ่มปุ่มลบ
+        // Create the header element
+        let thead = document.createElement("thead");
+        let tr = document.createElement("tr");
+        cols.forEach((item) => {
+          let th = document.createElement("th");
+          th.innerText = item;
+          tr.appendChild(th);
+        });
+        thead.appendChild(tr);
+        table.append(thead);
+
+        let tb = document.createElement("tbody");
+        tb.setAttribute("id", "book_tbody");
+        // Loop through the JSON data and create table rows
+        books.forEach((item, ind) => {
+          let tr = document.createElement("tr");
+          tr.setAttribute("id", ind);
+
+          let vals = Object.values(item);
+
+          // Loop through the values and create table cells
+          vals.forEach((elem) => {
+            let td = document.createElement("td");
+            td.innerText = elem;
+            tr.appendChild(td);
+          });
+          /// create edit btn
+          let edit_btn = document.createElement("td");
+          var btn = document.createElement("input");
+          btn.type = "button";
+          btn.className = "w3-button w3-blue";
+          btn.value = "edit";
+          btn.onclick = function () {
+            inTbEditBtn(ind);
+          };
+          edit_btn.appendChild(btn);
+          tr.appendChild(edit_btn);
+          ///
+          tb.appendChild(tr);
+          table.appendChild(tb);
+
+          // create delect btn
+          let delect_btn = document.createElement("td");
+          var btn = document.createElement("input");
+          btn.type = "button";
+          btn.className = "w3-button w3-blue";
+          btn.value = "delect";
+          btn.onclick = function () {
+            delectBtn(ind);
+          };
+          delect_btn.appendChild(btn);
+          tr.appendChild(delect_btn);
+          ///
+          tb.appendChild(tr);
+          table.appendChild(tb);
+        });
+        container.appendChild(table);
+      }
+      function cleanTableContainer() {
+        var e = document.getElementById("TBcontainer");
+        //e.firstElementChild can be used.
+        var child = e.lastElementChild;
+        while (child) {
+          e.removeChild(child);
+          child = e.lastElementChild;
+        }
+      }
+      function inTbEditBtn(ind) {
+        sectionManage("input");
+        var book = books[ind];
+        titleField.value = book.title;
+        authorField.value = book.author;
+        yearField.value = book.year;
+        priceField.value = book.price;
+        submitBtn.setAttribute("onclick", "editSubmitBtn(" + ind + ")");
+      }
+      function editSubmitBtn(ind) {
+        var editBook = {
+          title: titleField.value,
+          author: authorField.value,
+          year: yearField.value,
+          price: priceField.value,
+        };
+        books.splice(ind, 1, editBook);
+        sectionManage("view");
+      }
+
+      function delectBtn(ind) {
+        books.splice(ind, 1);
+        sectionManage("view");
+      }
+
+      function checkSubmitValue(book) {
+        if (book.title == "") {
+          alert("please add title");
+          return false;
+        }
+        if (book.author == "") {
+          alert("please add author");
+          return false;
+        }
+        if (book.year == "") {
+          alert("please add year");
+          return false;
+        }
+        
+        if(parseInt(book.year)<1980 || parseInt(book.year)>2024){
+          alert("year should in range 1980 to 2024");
+          return false;
+        }
+        if (book.price == "") {
+          alert("please add price");
+          return false;
+        }
+        return true;
+      }
+
+      function checkUnique(newBook, books) {
+        var arr = [];
+        var props1 = Object.values(newBook);
+        books.forEach((book) => {
+          var props2 = Object.values(book);
+          var _isEqul = JSON.stringify(props1) === JSON.stringify(props2)
+          arr.push(_isEqul);
+        });
+        //ถ้ามี 1 ตัวใน arr เป็น true แสดงว่า new book อยู่ใน books อยู่แล้ว
+        if (arr.includes(true)){
+          alert("This book already exist");
+          return false;
+        }else{
+          return true;
+        }
+      }
+      window.onload = viewSection();
+    </script>
+  </body>
+</html>
