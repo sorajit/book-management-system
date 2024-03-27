@@ -41,6 +41,7 @@
         id="year"
         min="1800"
         max="2024"
+        step = "1"
       /><br /><br />
       <label for="price">Price :</label>
       <input type="number" name="price" id="price" /><br /><br />
@@ -229,6 +230,10 @@
           return false;
         }
         
+        if(book.year.search(/[\.,e]/i) != -1){
+          alert("year should be integer");
+        }
+
         if(parseInt(book.year)<1980 || parseInt(book.year)>2024){
           alert("year should in range 1980 to 2024");
           return false;
